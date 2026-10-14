@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Panel Gerencial de Administración - Control de Barra</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --bg: #f4f6f9;
@@ -28,11 +29,11 @@ header {
 }
 header h1 { margin: 0; font-size: 19px; }
 .header-actions { display: flex; gap: 10px; align-items: center; }
-.btn-nav-bar {
-  background: #1b4f72; color: white; border: none; padding: 8px 14px;
-  border-radius: 6px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 13px;
+.btn-nav {
+  background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3);
+  padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 12px;
 }
-.btn-nav-bar:hover { background: #2980b9; }
+.btn-nav:hover { background: rgba(255,255,255,0.25); }
 
 .container { max-width: 1300px; margin: 20px auto; padding: 0 16px; }
 
@@ -50,7 +51,7 @@ header h1 { margin: 0; font-size: 19px; }
   background: white; border-left: 5px solid var(--primary);
   padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
-.kpi-card h4 { margin: 0 0 5px 0; font-size: 13px; color: #7f8c8d; text-transform: uppercase; }
+.kpi-card h4 { margin: 0 0 5px 0; font-size: 12px; color: #7f8c8d; text-transform: uppercase; }
 .kpi-card .val { font-size: 22px; font-weight: bold; color: var(--primary); }
 
 h2 { margin-top: 0; font-size: 18px; color: var(--primary); border-bottom: 2px solid #ebdef0; padding-bottom: 8px; }
@@ -71,6 +72,17 @@ th { background: #f8f9fa; font-weight: 700; color: #2c3e50; }
 .badge-ok { background: #d4efdf; color: #196f3d; }
 .badge-alert { background: #fadbd8; color: #78281f; }
 
+/* Bloqueo */
+#pantallaBloqueo {
+  position: fixed; inset: 0; background: #1e1e24; display: none; align-items: center; justify-content: center;
+  z-index: 9999; padding: 20px; color: white; text-align: center;
+}
+.lock-box {
+  background: #2b2b36; border-radius: 16px; padding: 36px 30px; max-width: 440px; width: 100%;
+}
+.lock-box h2 { border: none; color: #f87171; font-size: 22px; margin-bottom: 12px; }
+.lock-box p { font-size: 13px; color: #cbd5e1; line-height: 1.5; margin-bottom: 24px; }
+
 .toast {
   position: fixed; bottom: 20px; right: 20px; background: #2c3e50; color: white;
   padding: 12px 20px; border-radius: 8px; display: none; z-index: 1000; font-weight: 500;
@@ -79,17 +91,26 @@ th { background: #f8f9fa; font-weight: 700; color: #2c3e50; }
 </head>
 <body>
 
-<header>
+<div id="pantallaBloqueo">
+  <div class="lock-box">
+    <h2>🔒 Acceso Denegado</h2>
+    <p>Este módulo contiene información financiera, costos y auditoría general. Solo está autorizado para la cuenta de administración: <b>asesorconsultorcasf@yahoo.com</b>.</p>
+    <a href="index.html" class="btn" style="background:#e11d48; text-decoration:none; display:inline-block; padding:12px 24px;">Volver al Portal Principal</a>
+  </div>
+</div>
+
+<header id="appHeader">
   <div>
-    <h1>Panel Gerencial de Administración (Dueño / Supervisor)</h1>
-    <div style="font-size: 12px; opacity: 0.85;">Maestro General · Auditoría de Movimientos · Valorización en Dinero · Exportación Excel</div>
+    <h1>Panel Gerencial de Administración (Exclusivo Yahoo) 🔒</h1>
+    <div style="font-size: 12px; opacity: 0.85;" id="userTag">Administrador Conectado</div>
   </div>
   <div class="header-actions">
-    <a href="app_operacion_bar.html" class="btn-nav-bar">🍸 Ir a App Operativa de Barra</a>
+    <a href="app_operacion_bar.html" class="btn-nav">🍸 Ir a Módulo de Barra</a>
+    <button class="btn-nav" style="background:#e11d48;" onclick="cerrarSesion()">Cerrar Sesión</button>
   </div>
 </header>
 
-<div class="container">
+<div class="container" id="appBody">
   <div class="grid-4">
     <div class="kpi-card">
       <h4>Total Ítems en Barra</h4>
@@ -111,7 +132,7 @@ th { background: #f8f9fa; font-weight: 700; color: #2c3e50; }
 
   <div class="card">
     <h2>📋 MAESTRO GERENCIAL DE MOVIMIENTOS EN TIEMPO REAL</h2>
-    <p style="font-size:13px; color:#666;">Historial inalterable de cada cierre diario, merma, solicitud libre y recepción registrada en el bar.</p>
+    <p style="font-size:13px; color:#666;">Historial de cierres de turno, mermas, solicitudes libres y recepciones registradas por el personal de barra.</p>
     <div style="margin-bottom: 12px;">
       <button class="btn" onclick="exportarExcelXLSX()">📥 Exportar Auditoría y Stock a Excel (.XLSX)</button>
     </div>
@@ -165,6 +186,28 @@ th { background: #f8f9fa; font-weight: 700; color: #2c3e50; }
 <div class="toast" id="toast">Actualizado</div>
 
 <script>
+function verificarAccesoRol() {
+  const usuario = sessionStorage.getItem('usuarioEmail');
+  const rol = sessionStorage.getItem('usuarioRol');
+
+  if (usuario !== 'asesorconsultorcasf@yahoo.com' && rol !== 'ADMIN') {
+    document.getElementById('pantallaBloqueo').style.display = 'flex';
+    document.getElementById('appHeader').style.display = 'none';
+    document.getElementById('appBody').style.display = 'none';
+  } else {
+    document.getElementById('pantallaBloqueo').style.display = 'none';
+    document.getElementById('appHeader').style.display = 'flex';
+    document.getElementById('appBody').style.display = 'block';
+    document.getElementById('userTag').textContent = `Administrador: ${usuario}`;
+    renderGerencia();
+  }
+}
+
+function cerrarSesion() {
+  sessionStorage.clear();
+  window.location.href = 'index.html';
+}
+
 let db = JSON.parse(localStorage.getItem('barAppExecXLSX')) || { productos: [], movimientosMaster: [], pedidos: [] };
 
 function showToast(msg) {
@@ -229,8 +272,7 @@ function exportarExcelXLSX() {
   showToast("Reporte Excel exportado correctamente");
 }
 
-renderGerencia();
-window.addEventListener('storage', () => { renderGerencia(); });
+verificarAccesoRol();
 </script>
 </body>
 </html>

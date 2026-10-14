@@ -112,8 +112,9 @@ th { background: #f8f9fa; font-weight: 700; color: #2c3e50; }
     <h1>Sistema de Bar & Control de Inventario</h1>
     <div style="font-size: 12px; opacity: 0.85;">Operación de Turnos · Solicitud Libre y Mínimos · Recepción · Maestro en Vivo</div>
   </div>
-  <div class="header-actions">
-    <button class="btn-toggle-mode" onclick="toggleModoVista()" id="btnModo">👁️ Vista: Modo Completo</button>
+    <div class="header-actions">
+    <span id="userTagBar" style="font-size:12px; opacity:0.9; background:rgba(255,255,255,0.15); padding:5px 10px; border-radius:5px;">Barra Conectada</span>
+    <button onclick="cerrarSesionBar()" style="background:#e11d48; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold;">Cerrar Sesión</button>
   </div>
 </header>
 
@@ -602,6 +603,18 @@ function exportarExcelXLSX() {
 }
 
 initDiario();
+
+function verificarUsuarioBar() {
+  const user = sessionStorage.getItem('usuarioEmail') || 'csepulvedafuica@gmail.com';
+  const tag = document.getElementById('userTagBar');
+  if(tag) tag.textContent = 'Usuario: ' + user + ' (Bar)';
+}
+function cerrarSesionBar() {
+  sessionStorage.clear();
+  window.location.href = 'index.html';
+}
+verificarUsuarioBar();
+
 </script>
 </body>
 </html>
