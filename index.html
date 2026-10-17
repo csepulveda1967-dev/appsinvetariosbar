@@ -3,199 +3,388 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema de Inventario - Inicio de Sesión</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>Sistema de Inventario A&B — Portal de Acceso</title>
 <style>
 :root {
-  --bg: #f8fafc;
-  --card: #ffffff;
+  --bg: #f0f4f8;
   --text: #0f172a;
   --muted: #64748b;
-  --primary-bar: #1b4f72;
-  --primary-admin: #512e5f;
   --border: #e2e8f0;
+  --bar-dark: #1b4f72;
+  --bar-light: #eaf4fb;
+  --bar-accent: #2980b9;
+  --admin-dark: #4a235a;
+  --admin-light: #f5eef8;
+  --admin-accent: #7d3c98;
+  --radius: 16px;
+  --shadow: 0 8px 32px rgba(15,23,42,0.10);
 }
-* { box-sizing: border-box; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
-  margin: 0; background: var(--bg); color: var(--text);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
-  padding: 20px;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
 }
-.login-card {
-  background: white; border: 1px solid var(--border); border-radius: 18px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06); width: 100%; max-width: 440px; padding: 36px 30px;
-}
-.login-header { text-align: center; margin-bottom: 26px; }
-.login-header h1 { margin: 0 0 8px 0; font-size: 22px; color: #0f172a; }
-.login-header p { margin: 0; color: var(--muted); font-size: 13px; }
 
-.roles-info {
-  background: #f1f5f9; border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 12px;
+/* ── Encabezado ── */
+.portal-header {
+  text-align: center;
+  margin-bottom: 40px;
 }
-.role-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
-.role-admin { background: #f3e8ff; color: #7e22ce; }
-.role-bar { background: #e0f2fe; color: #0369a1; }
+.portal-header .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: .04em;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.portal-header h1 {
+  font-size: clamp(22px, 5vw, 32px);
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -.03em;
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+.portal-header p {
+  color: var(--muted);
+  font-size: 14px;
+  max-width: 380px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
 
-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #334155; }
-input {
-  width: 100%; padding: 11px 13px; border: 1px solid var(--border); border-radius: 8px;
-  font-size: 14px; margin-bottom: 16px; background: #fdfdfd;
+/* ── Tarjetas de acceso ── */
+.portal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+  max-width: 760px;
 }
-input:focus { outline: 2px solid #3b82f6; border-color: transparent; }
+@media (max-width: 600px) {
+  .portal-grid { grid-template-columns: 1fr; }
+}
 
-.btn {
-  width: 100%; background: #0f172a; color: white; border: none; padding: 13px;
-  border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+.access-card {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: transform .15s, box-shadow .15s;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
-.btn:hover { opacity: 0.92; }
+.access-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px rgba(15,23,42,0.13);
+}
 
-.quick-select {
-  display: flex; gap: 8px; margin-bottom: 18px;
+/* Variante BAR */
+.access-card.bar {
+  border-top: 4px solid var(--bar-dark);
 }
-.quick-btn {
-  flex: 1; padding: 8px 6px; font-size: 11px; border: 1px dashed #cbd5e1;
-  background: white; border-radius: 6px; cursor: pointer; text-align: center; color: #475569;
+.access-card.bar .card-icon {
+  background: var(--bar-light);
+  color: var(--bar-dark);
 }
-.quick-btn:hover { background: #f8fafc; border-color: #94a3b8; }
+.access-card.bar .card-btn {
+  background: var(--bar-dark);
+}
+.access-card.bar .card-btn:hover {
+  background: var(--bar-accent);
+}
 
-#errorMsg {
-  background: #fef2f2; border: 1px solid #fecaca; color: #dc2626;
-  padding: 10px; border-radius: 6px; font-size: 12px; margin-bottom: 16px; display: none;
+/* Variante ADMIN */
+.access-card.admin {
+  border-top: 4px solid var(--admin-dark);
 }
-.config-link {
-  text-align: center; margin-top: 18px; font-size: 12px;
+.access-card.admin .card-icon {
+  background: var(--admin-light);
+  color: var(--admin-dark);
 }
-.config-link a { color: #64748b; text-decoration: none; cursor: pointer; }
-.config-link a:hover { text-decoration: underline; }
+.access-card.admin .card-btn {
+  background: var(--admin-dark);
+}
+.access-card.admin .card-btn:hover {
+  background: var(--admin-accent);
+}
 
-#supabaseConfigBox {
-  margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--border); display: none;
+.card-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
 }
+.card-role-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 99px;
+  margin-bottom: 2px;
+}
+.bar .card-role-badge  { background: var(--bar-light);   color: var(--bar-dark);   }
+.admin .card-role-badge { background: var(--admin-light); color: var(--admin-dark); }
+
+.card-title {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text);
+}
+.card-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  flex: 1;
+}
+
+/* Lista de accesos del módulo */
+.card-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 10px 0 0;
+  border-top: 1px solid var(--border);
+}
+.card-features li::before {
+  content: "✓ ";
+  font-weight: 700;
+}
+.bar .card-features li::before  { color: var(--bar-accent);   }
+.admin .card-features li::before { color: var(--admin-accent); }
+
+.card-btn {
+  display: block;
+  width: 100%;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 13px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: background .15s;
+  margin-top: 4px;
+}
+
+/* ── Pie ── */
+.portal-footer {
+  margin-top: 36px;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.6;
+}
+.portal-footer a {
+  color: var(--muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ── Config Supabase (desplegable) ── */
+#supabasePanel {
+  display: none;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  width: 100%;
+  max-width: 480px;
+  margin-top: 20px;
+  box-shadow: var(--shadow);
+}
+#supabasePanel h3 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--text);
+}
+#supabasePanel label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 4px;
+  margin-top: 10px;
+}
+#supabasePanel input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 11px;
+  font-size: 12px;
+  background: #fdfdfd;
+}
+#supabasePanel .save-btn {
+  margin-top: 14px;
+  width: 100%;
+  background: #475569;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+#supabasePanel .save-btn:hover { background: #334155; }
+.sb-status {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 99px;
+  font-weight: 700;
+}
+.sb-on  { background: #d1fae5; color: #065f46; }
+.sb-off { background: #fee2e2; color: #991b1b; }
 </style>
 </head>
 <body>
 
-<div class="login-card">
-  <div class="login-header">
-    <h1>Control de Inventario Gastronómico</h1>
-    <p>Ingreso seguro con roles de usuario (Supabase Auth)</p>
+<!-- Encabezado del portal -->
+<div class="portal-header">
+  <div class="logo">
+    🍽️ &nbsp; SISTEMA A&B
   </div>
+  <h1>Control de Inventario<br>Gastronómico</h1>
+  <p>Selecciona tu módulo de acceso. Cada área requiere credenciales propias.</p>
+</div>
 
-  <div class="roles-info">
-    <div style="margin-bottom:6px;">
-      <span class="role-badge role-admin">ADMIN</span> <b>asesorconsultorcasf@yahoo.com</b>
-      <div style="color:var(--muted); font-size:11px;">Acceso completo a Gerencia, Costos y Bar.</div>
-    </div>
+<!-- Tarjetas de acceso por rol -->
+<div class="portal-grid">
+
+  <!-- Módulo BAR -->
+  <div class="access-card bar" onclick="irA('login_bar.html')">
+    <div class="card-icon">🍸</div>
     <div>
-      <span class="role-badge role-bar">BAR</span> <b>csepulvedafuica@gmail.com</b>
-      <div style="color:var(--muted); font-size:11px;">Restringido a Turnos y Pedidos de Barra.</div>
+      <div class="card-role-badge">Operación</div>
+      <div class="card-title">Módulo de Barra</div>
     </div>
+    <div class="card-desc">
+      Para el encargado de turno, bartender y recepción de mercadería. Control diario de stock en barra.
+    </div>
+    <ul class="card-features">
+      <li>Apertura y cierre de turno</li>
+      <li>Solicitud a bodega (sugerida y libre)</li>
+      <li>Recepción de mercadería</li>
+      <li>Maestro de stock en vivo</li>
+    </ul>
+    <a class="card-btn" href="login_bar.html">Ingresar a Barra →</a>
   </div>
 
-  <div class="quick-select">
-    <button class="quick-btn" type="button" onclick="seleccionarUsuario('asesorconsultorcasf@yahoo.com')">👤 Cargar Yahoo (Admin)</button>
-    <button class="quick-btn" type="button" onclick="seleccionarUsuario('csepulvedafuica@gmail.com')">🍸 Cargar Gmail (Bar)</button>
+  <!-- Módulo ADMIN -->
+  <div class="access-card admin" onclick="irA('login_admin.html')">
+    <div class="card-icon">📊</div>
+    <div>
+      <div class="card-role-badge">Administración</div>
+      <div class="card-title">Panel Gerencial</div>
+    </div>
+    <div class="card-desc">
+      Para el administrador y auditor. Acceso a costos, valorización, auditoría y maestro de productos.
+    </div>
+    <ul class="card-features">
+      <li>KPIs y valorización de inventario</li>
+      <li>Bitácora de auditoría completa</li>
+      <li>Gestión de maestro de productos</li>
+      <li>Exportación a Excel (.xlsx)</li>
+    </ul>
+    <a class="card-btn" href="login_admin.html">Ingresar a Gerencia →</a>
   </div>
 
-  <form id="loginForm" onsubmit="iniciarSesion(event)">
-    <label>Correo Electrónico</label>
-    <input type="email" id="email" required placeholder="tu-correo@dominio.com">
+</div>
 
-    <label>Contraseña</label>
-    <input type="password" id="password" required placeholder="••••••••">
+<!-- Estado Supabase + configuración -->
+<div class="portal-footer">
+  <span id="sbStatusBadge" class="sb-status sb-off">⬤ Sin conexión Supabase</span>
+  &nbsp;·&nbsp;
+  <a onclick="toggleSupabasePanel()">⚙️ Configurar Supabase</a>
+</div>
 
-    <div id="errorMsg"></div>
-
-    <button type="submit" class="btn" id="btnSubmit">Iniciar Sesión →</button>
-  </form>
-
-  <div class="config-link">
-    <a onclick="toggleConfigSupabase()">⚙️ Configurar URL y Clave de Supabase</a>
-  </div>
-
-  <div id="supabaseConfigBox">
-    <label style="font-size:11px;">Project URL de Supabase</label>
-    <input type="text" id="sbUrl" placeholder="https://tu-proyecto.supabase.co" style="font-size:12px; margin-bottom:8px;">
-    <label style="font-size:11px;">Anon Public Key de Supabase</label>
-    <input type="password" id="sbKey" placeholder="eyJhbGciOiJIUzI1NiIsIn..." style="font-size:12px; margin-bottom:12px;">
-    <button type="button" class="btn" style="padding:8px; font-size:12px; background:#475569;" onclick="guardarCredencialesSupabase()">Guardar Conexión en Navegador</button>
-  </div>
+<!-- Panel de configuración Supabase (oculto por defecto) -->
+<div id="supabasePanel">
+  <h3>⚙️ Conexión con Supabase</h3>
+  <label>Project URL</label>
+  <input type="text" id="sbUrl" placeholder="https://tu-proyecto.supabase.co">
+  <label>Anon Public Key</label>
+  <input type="password" id="sbKey" placeholder="eyJhbGciOiJIUzI1NiIsIn...">
+  <button class="save-btn" onclick="guardarSupabase()">Guardar conexión en este navegador</button>
 </div>
 
 <script>
-function seleccionarUsuario(correo) {
-  document.getElementById('email').value = correo;
-  document.getElementById('password').focus();
-}
+// ── Navegación ──────────────────────────────────────────────
+function irA(url) { window.location.href = url; }
 
-function toggleConfigSupabase() {
-  const box = document.getElementById('supabaseConfigBox');
-  box.style.display = box.style.display === 'none' ? 'block' : 'none';
-  document.getElementById('sbUrl').value = localStorage.getItem('supabaseUrl') || '';
-  document.getElementById('sbKey').value = localStorage.getItem('supabaseKey') || '';
-}
-
-function guardarCredencialesSupabase() {
-  const url = document.getElementById('sbUrl').value.trim();
-  const key = document.getElementById('sbKey').value.trim();
-  localStorage.setItem('supabaseUrl', url);
-  localStorage.setItem('supabaseKey', key);
-  alert('Conexión con Supabase guardada correctamente.');
-  document.getElementById('supabaseConfigBox').style.display = 'none';
-}
-
-async function iniciarSesion(e) {
-  e.preventDefault();
-  const email = document.getElementById('email').value.trim().toLowerCase();
-  const password = document.getElementById('password').value;
-  const errorBox = document.getElementById('errorMsg');
-  const btn = document.getElementById('btnSubmit');
-  errorBox.style.display = 'none';
-
-  // Verificar si hay configuración activa de Supabase
-  const sbUrl = localStorage.getItem('supabaseUrl');
-  const sbKey = localStorage.getItem('supabaseKey');
-
-  btn.textContent = "Verificando...";
-  btn.disabled = true;
-
-  try {
-    if (sbUrl && sbKey) {
-      // Autenticación real contra Supabase
-      const supabase = window.supabase.createClient(sbUrl, sbKey);
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-    }
-
-    // Regla de roles definida por el usuario:
-    // asesorconsultorcasf@yahoo.com -> Administrador
-    // csepulvedafuica@gmail.com -> Bar
-    if (email === 'asesorconsultorcasf@yahoo.com') {
-      sessionStorage.setItem('usuarioEmail', email);
-      sessionStorage.setItem('usuarioRol', 'ADMIN');
-      sessionStorage.setItem('sesionGerente', 'autorizado');
-      window.location.href = 'app_panel_gerencial.html';
-    } else if (email === 'csepulvedafuica@gmail.com') {
-      sessionStorage.setItem('usuarioEmail', email);
-      sessionStorage.setItem('usuarioRol', 'BAR');
-      sessionStorage.removeItem('sesionGerente'); // Sin permiso para gerencia
-      window.location.href = 'app_operacion_bar.html';
-    } else {
-      // Para cualquier otro correo, se define por defecto como Bar salvo que sea admin
-      sessionStorage.setItem('usuarioEmail', email);
-      sessionStorage.setItem('usuarioRol', 'BAR');
-      sessionStorage.removeItem('sesionGerente');
-      window.location.href = 'app_operacion_bar.html';
-    }
-  } catch (err) {
-    errorBox.textContent = err.message || "Error al autenticar en Supabase. Verifica tus datos.";
-    errorBox.style.display = 'block';
-    btn.textContent = "Iniciar Sesión →";
-    btn.disabled = false;
+// ── Panel Supabase ──────────────────────────────────────────
+function toggleSupabasePanel() {
+  const panel = document.getElementById('supabasePanel');
+  const visible = panel.style.display === 'block';
+  panel.style.display = visible ? 'none' : 'block';
+  if (!visible) {
+    document.getElementById('sbUrl').value = localStorage.getItem('supabaseUrl') || '';
+    document.getElementById('sbKey').value = localStorage.getItem('supabaseKey') || '';
   }
 }
-</script>
 
+function guardarSupabase() {
+  const url = document.getElementById('sbUrl').value.trim();
+  const key = document.getElementById('sbKey').value.trim();
+  if (!url || !key) {
+    alert('Ingresa URL y clave antes de guardar.');
+    return;
+  }
+  localStorage.setItem('supabaseUrl', url);
+  localStorage.setItem('supabaseKey', key);
+  document.getElementById('supabasePanel').style.display = 'none';
+  actualizarEstadoSB();
+  alert('Conexión guardada. Los módulos usarán Supabase al iniciar sesión.');
+}
+
+function actualizarEstadoSB() {
+  const badge = document.getElementById('sbStatusBadge');
+  const url   = localStorage.getItem('supabaseUrl');
+  const key   = localStorage.getItem('supabaseKey');
+  if (url && key) {
+    badge.textContent = '⬤ Supabase conectado';
+    badge.className = 'sb-status sb-on';
+  } else {
+    badge.textContent = '⬤ Sin conexión Supabase (modo local)';
+    badge.className = 'sb-status sb-off';
+  }
+}
+
+// Ejecutar al cargar
+actualizarEstadoSB();
+</script>
 </body>
 </html>
