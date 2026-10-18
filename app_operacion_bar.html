@@ -110,7 +110,7 @@ th { background: #f8f9fa; font-weight: 700; color: #2c3e50; }
 <header>
   <div>
     <h1>Sistema de Bar & Control de Inventario</h1>
-    <div style="font-size: 12px; opacity: 0.85;">Operación de Turnos · Solicitud Libre y Mínimos · Recepción · Maestro en Vivo</div>
+    <div style="font-size: 12px; opacity: 0.85;">Operación de Turnos · Solicitud Libre y Mínimos · Recepción</div>
   </div>
     <div class="header-actions">
     <span id="userTagBar" style="font-size:12px; opacity:0.9; background:rgba(255,255,255,0.15); padding:5px 10px; border-radius:5px;">Barra Conectada</span>
@@ -123,7 +123,6 @@ th { background: #f8f9fa; font-weight: 700; color: #2c3e50; }
     <button class="tab-btn active" onclick="switchTab('diario', this)">1. Turno Diario (Apertura/Cierre)</button>
     <button class="tab-btn" onclick="switchTab('pedidos', this)">2. Solicitar a Bodega (Sugerido & Libre)</button>
     <button class="tab-btn" onclick="switchTab('recepcion', this)">3. Recibir de Bodega (Ajustable)</button>
-    <button class="tab-btn tab-maestro" onclick="switchTab('maestro', this)" id="tabMaestroBtn">4. 📋 MAESTRO & ADMINISTRACIÓN EN VIVO</button>
   </div>
 
   <!-- 1. TURNO DIARIO -->
@@ -227,80 +226,6 @@ th { background: #f8f9fa; font-weight: 700; color: #2c3e50; }
       </table>
     </div>
   </div>
-
-  <!-- 4. MAESTRO GENERAL & MOVIMIENTOS EN TIEMPO REAL -->
-  <div id="maestro" class="panel">
-    <div class="grid-4">
-      <div class="kpi-card">
-        <h4>Total Ítems en Barra</h4>
-        <div class="val" id="kpiTotalItems">0</div>
-      </div>
-      <div class="kpi-card" style="border-left-color: var(--danger);">
-        <h4>Alertas de Stock Mínimo</h4>
-        <div class="val" id="kpiAlertas" style="color:var(--danger);">0</div>
-      </div>
-      <div class="kpi-card" style="border-left-color: var(--success);">
-        <h4>Pedidos Pendientes</h4>
-        <div class="val" id="kpiPendientes" style="color:var(--success);">0</div>
-      </div>
-      <div class="kpi-card" style="border-left-color: var(--warning);">
-        <h4>Valor Est. Inventario Bar</h4>
-        <div class="val" id="kpiValor" style="color:var(--warning);">$0</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2 class="admin-h2">📋 MAESTRO DE MOVIMIENTOS EN TIEMPO REAL (BITÁCORA AUDITABLE)</h2>
-      <p style="font-size:13px; color:#666;">Cada cierre de turno, merma, solicitud libre y recepción queda grabado al instante.</p>
-      <div style="margin-bottom: 12px;">
-        <button class="btn btn-admin" onclick="exportarExcelXLSX()">📥 Exportar Auditoría y Stock a Excel (.XLSX)</button>
-      </div>
-      <div style="max-height: 320px; overflow-y: auto;">
-        <table id="tablaMaestroMovimientos">
-          <thead>
-            <tr><th>Fecha / Hora</th><th>Tipo Evento</th><th>Código</th><th>Producto</th><th>Cantidad</th><th>Detalle / Auditoría</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="grid-2">
-      <div class="card">
-        <h2 class="admin-h2">📋 MAESTRO DE STOCK ACTUAL EN BARRA</h2>
-        <div style="max-height: 320px; overflow-y: auto;">
-          <table id="tablaMaestroStock">
-            <thead>
-              <tr><th>Código</th><th>Producto</th><th>Stock</th><th>Mínimo</th><th>Diferencia</th><th>Estado</th></tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2 class="admin-h2">Dar de Alta Nuevo Producto en Barra</h2>
-        <form onsubmit="agregarProducto(event)">
-          <label>Nombre del Producto</label>
-          <input type="text" id="nuevoNombre" required placeholder="Ej. Ron Bacardi 750ml">
-          <label>Unidad de Medida</label>
-          <select id="nuevoUdm">
-            <option value="BOT">Botella (BOT)</option>
-            <option value="LTS">Litros (LTS)</option>
-            <option value="UNID">Unidades / Latas (UNID)</option>
-            <option value="BARRIL">Barril (BARRIL)</option>
-          </select>
-          <div class="grid-2">
-            <div><label>Stock Mínimo</label><input type="number" id="nuevoMinimo" required min="1" value="3"></div>
-            <div><label>Costo Unitario ($)</label><input type="number" id="nuevoCosto" required min="0" value="5000"></div>
-          </div>
-          <label>Stock Inicial</label>
-          <input type="number" id="nuevoStock" required min="0" value="5">
-          <button class="btn btn-admin" type="submit">Guardar en Maestro</button>
-        </form>
-      </div>
-    </div>
-  </div>
 </div>
 
 <div class="toast" id="toast">Operación guardada</div>
@@ -344,23 +269,8 @@ function switchTab(id, btn) {
   if(id === 'diario') initDiario();
   if(id === 'pedidos') initPedidosTab();
   if(id === 'recepcion') renderRecepcion();
-  if(id === 'maestro') renderMaestro();
 }
 
-let modoOperativoSolo = false;
-function toggleModoVista() {
-  modoOperativoSolo = !modoOperativoSolo;
-  const btn = document.getElementById('btnModo');
-  const tabMaestro = document.getElementById('tabMaestroBtn');
-  if(modoOperativoSolo) {
-    btn.textContent = "👁️ Vista: Solo Bartender";
-    tabMaestro.style.display = "none";
-    switchTab('diario', document.querySelectorAll('.tab-btn')[0]);
-  } else {
-    btn.textContent = "👁️ Vista: Modo Completo (Con Maestro)";
-    tabMaestro.style.display = "inline-block";
-  }
-}
 
 function initDiario() {
   db = JSON.parse(localStorage.getItem('barAppExecXLSX')) || db;
@@ -526,81 +436,6 @@ function recibir(id) {
   guardarDB(); renderRecepcion(); showToast(`Recibidos ${real} ítems.`);
 }
 
-function renderMaestro() {
-  db = JSON.parse(localStorage.getItem('barAppExecXLSX')) || db;
-
-  // KPIs
-  const totalItems = db.productos.length;
-  const alertas = db.productos.filter(p => p.stockActual < p.minimo).length;
-  const pendientes = (db.pedidos || []).filter(x => x.estado === 'Pendiente').length;
-  const valorTotal = db.productos.reduce((acc, p) => acc + (p.stockActual * (p.costo || 5000)), 0);
-
-  document.getElementById('kpiTotalItems').textContent = totalItems;
-  document.getElementById('kpiAlertas').textContent = alertas;
-  document.getElementById('kpiPendientes').textContent = pendientes;
-  document.getElementById('kpiValor').textContent = '$' + Math.round(valorTotal).toLocaleString('es-CL');
-
-  // Tabla Stock
-  const tbodyStock = document.querySelector('#tablaMaestroStock tbody');
-  tbodyStock.innerHTML = db.productos.map(p => {
-    const dif = p.stockActual - p.minimo;
-    const estado = p.stockActual < p.minimo ? '<span class="badge badge-alert">BAJO MÍNIMO</span>' : '<span class="badge badge-ok">OK</span>';
-    return `<tr>
-      <td>${p.id}</td>
-      <td><b>${p.nombre}</b></td>
-      <td>${p.stockActual} ${p.udm}</td>
-      <td>${p.minimo} ${p.udm}</td>
-      <td style="color:${dif<0?'red':'green'}; font-weight:bold;">${dif >= 0 ? '+' : ''}${dif}</td>
-      <td>${estado}</td>
-    </tr>`;
-  }).join('');
-
-  // Tabla Movimientos
-  const tbodyMov = document.querySelector('#tablaMaestroMovimientos tbody');
-  tbodyMov.innerHTML = (db.movimientosMaster || []).map(m => `<tr>
-    <td>${m.fechaHora}</td>
-    <td><b>${m.tipo}</b></td>
-    <td>${m.codigo}</td>
-    <td>${m.producto}</td>
-    <td>${m.cantidad}</td>
-    <td>${m.detalle}</td>
-  </tr>`).join('');
-}
-
-function agregarProducto(e) {
-  e.preventDefault();
-  const nombre = document.getElementById('nuevoNombre').value.toUpperCase();
-  const udm = document.getElementById('nuevoUdm').value;
-  const minimo = parseFloat(document.getElementById('nuevoMinimo').value);
-  const costo = parseFloat(document.getElementById('nuevoCosto').value);
-  const stock = parseFloat(document.getElementById('nuevoStock').value);
-
-  const id = 'BAR-' + String(db.productos.length + 1).padStart(3, '0');
-  db.productos.push({ id, nombre, udm, minimo, stockActual: stock, costo, ubicacion: "Barra principal" });
-  registrarMovimientoMaster("NUEVO PRODUCTO", id, nombre, stock, `Creado con costo $${costo}`);
-  guardarDB();
-  e.target.reset();
-  renderMaestro();
-  showToast('Producto agregado al maestro correctamente.');
-}
-
-function exportarExcelXLSX() {
-  db = JSON.parse(localStorage.getItem('barAppExecXLSX')) || db;
-  if(!db.movimientosMaster || !db.movimientosMaster.length) return alert('No hay movimientos para exportar.');
-
-  const datosMovimientos = db.movimientosMaster.map(m => ({
-    "Fecha / Hora": m.fechaHora, "Tipo Evento": m.tipo, "Código": m.codigo, "Producto": m.producto, "Cantidad": m.cantidad, "Detalle": m.detalle
-  }));
-  const datosStock = db.productos.map(p => ({
-    "Código": p.id, "Producto": p.nombre, "Unidad": p.udm, "Stock Actual": p.stockActual, "Mínimo": p.minimo, "Costo Unit. ($)": p.costo || 5000, "Valor Total ($)": p.stockActual * (p.costo || 5000)
-  }));
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datosMovimientos), "Auditoria_Movimientos");
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datosStock), "Stock_Valorizado");
-  XLSX.writeFile(wb, "Reporte_Maestro_Bar.xlsx");
-  showToast("Reporte Excel exportado correctamente");
-}
 
 initDiario();
 
